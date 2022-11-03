@@ -26,7 +26,7 @@
                         <p th:text="${anime.overview}"></p>
                         <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTop" aria-controls="offcanvasTop">剧集切换</button>
                     </div>
-                    <div th:if="${(anime.seasons != null) && (anime.seasons[0].episodes != null) && (anime.seasons[0].episodes[0].url != null)}">
+                    <div>
                         <video id="ikEpisodeVideo" th:src="${anime.seasons[0].episodes[0].url }" controls style="width:100%;"></video>
                     </div>
                 </div>
@@ -73,11 +73,10 @@
         console.log(anime.seasons[0].episodes)
 
         function changeVideoSrc(url) {
-            console.log('url', url)
+            console.log('new url', url)
             const video = document.getElementById('ikEpisodeVideo')
             console.log('video', video)
-            console.log('old url', video.currentSrc)
-            
+
             // 重载URL
             video.pause()
             video.src = url
