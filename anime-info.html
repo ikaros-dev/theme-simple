@@ -29,6 +29,9 @@
                     <div>
                         <video id="ikEpisodeVideo" th:src="${anime.seasons[0].episodes[0].url }" controls style="width:100%;"></video>
                     </div>
+                    <!-- <div>
+                        <div id="dplayer"></div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -67,23 +70,39 @@
         </div>
     </div>
 
+    <!-- <script src="/static/lib/dplayer/DPlayer.min.js"></script> -->
     <script  th:inline="javascript">
         const anime = [[${anime}]]
         console.log(anime)
         console.log(anime.seasons[0].episodes)
 
+        // create dplayer instance
+        // const dp = new DPlayer({
+        //     container: document.getElementById('dplayer'),
+        //     screenshot: true,
+        //     preload: 'metadata',
+        //     volume: 0.7,
+        //     video: {
+        //         url: anime.seasons[0].episodes[0].url,
+        //     },
+        // });
+
         function changeVideoSrc(url) {
             console.log('new url', url)
-            const video = document.getElementById('ikEpisodeVideo')
-            console.log('video', video)
 
-            // 重载URL
+            // // 重载URL
+            const video = document.getElementById('ikEpisodeVideo')
             video.pause()
             video.src = url
             video.load()
             video.play()
+            // dp.pause()
+            // dp.video.src = url
+            // dp.video.load()
+            // dp.play()
         }
     </script>
     <script src="/static/lib/bootstrap-5.0.2/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    
 </body>
 </html>
