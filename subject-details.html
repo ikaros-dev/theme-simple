@@ -59,8 +59,6 @@
         <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12">
             <!-- 播放器 -->
             <video id="ik-video" controls class="embed-responsive-item" style="width: 100%;">
-                <source src="http://localhost:9999/files/2023/8/12/655a6aeb447b44bc93cd081a72e60c10.mkv" type="video/mp4">
-                <!-- 如果需要，可以添加其他视频格式的 source -->
                 Your browser does not support the video tag.
             </video>
 
@@ -126,6 +124,7 @@
                     var video = document.getElementById('ik-video');
                     video.pause();
                     video.src = episode.resources[0].url;
+                    video.controls = true;
                     video.load();
                     video.play();
                 } else {
