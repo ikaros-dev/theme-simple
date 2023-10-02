@@ -1,103 +1,153 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
->
+><!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
-    <link href="/theme/simple/static/favicon.ico" rel="icon">
-    <!-- Bootstrap CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>番剧详情页面</title>
     <link href="/theme/simple/static/lib/bootstrap-5.0.2/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
-    <title>Ikaros Subject Details Page</title>
-</head>
-<body>
-<div>
-    <h2 style="text-align:center">
-        Ikaros Subject Details Page
-    </h2>
-
-
-    <hr>
-
-    <div class="container">
-        <div class="row align-items-start">
-            <div class="col-6">
-                <img th:src="${subject.cover}" width="100%" alt="test">
-            </div>
-            <div class="col-6">
-                <div style="margin-bottom: 1rem;">
-                    <h3 th:text="${subject.name}"></h3>
-                    <p th:text="${subject.summary}"></p>
-                    <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas"
-                            data-bs-target="#offcanvasTop" aria-controls="offcanvasTop">剧集切换
-                    </button>
-                </div>
-                <div th:if="${subject.episodes.size() > 0 && subject.episodes.get(0).resources.size() > 0}">
-                    <video
-                            id="ikEpisodeVideo"
-                            th:src="${subject.episodes.get(0).resources.get(0).url}"
-                            controls
-                            preload="metadata"
-                            style="width:100%;"></video>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-
-<div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasTop" aria-labelledby="offcanvasBottomLabel">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasBottomLabel">剧集切换</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body small">
-        <ul class="pagination">
-            <!--                    <li class="page-item disabled">-->
-            <!--                        <span class="page-link">上一集</span>-->
-            <!--                    </li>-->
-
-            <li class="page-item "
-                th:if="${subject.episodes.size() > 0}"
-                th:each="episode: ${subject.episodes}">
-                <a class="page-link"
-                   href="javascript:void(0);"
-                   th:text="${episode.sequence}"
-                   th:attr="onclick=|changeVideoSrc('${episode.resources.size() > 0 ? episode.resources.get(0).url : ''}')|">
-                    -1
-                </a>
-            </li>
-            <!--                    <li class="page-item">-->
-            <!--                        <a class="page-link" href="#">下一集</a>-->
-            <!--                    </li>-->
-        </ul>
-    </div>
-</div>
-
-<script th:inline="javascript">
-    const subject = [[${subject}]]
-    console.log('subject:', subject)
-
-    function changeVideoSrc(url) {
-        console.log('new video src url:', url)
-
-        if (!url) {
-            alert('当前未绑定资源')
-            return;
+    <style>
+        .list-group-item {
+            background-color: #f8f9fa; /* 默认按钮背景色 */
+            overflow: hidden;
         }
 
-        // // 重载URL
-        const video = document.getElementById('ikEpisodeVideo')
-        video.pause()
-        video.src = url
-        video.load()
-        video.play()
-        // dp.pause()
-        // dp.video.src = url
-        // dp.video.load()
-        // dp.play()
-    }
-</script>
-<script src="/theme/simple/static/lib/bootstrap-5.0.2/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        .list-group-item:hover {
+            background-color: #f0f0f0; /* 鼠标移动到剧集时的背景颜色 */
+            cursor: pointer; /* 鼠标样式为手型 */
+        }
 
+        .list-group-item.active {
+            background-color: #ff6600; /* 选中的剧集颜色为橘黄色 */
+            border-color: #ff6600; /* 边框颜色为橘黄色 */
+            color: #ffffff; /* 字体颜色为白色 */
+        }
+
+        .toggle-layout {
+            background-color: #f8f9fa; /* 按钮背景色 */
+            border: 1px solid #dee2e6; /* 按钮边框颜色 */
+            color: #343a40; /* 按钮文字颜色 */
+        }
+
+        .toggle-layout.active {
+            background-color: #ff6600; /* 选中按钮的背景色 */
+            border-color: #ff6600; /* 选中按钮的边框颜色 */
+            color: #ffffff; /* 选中按钮的文字颜色 */
+        }
+
+        .cover-image {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .anime-description {
+            display: -webkit-box;
+            -webkit-line-clamp: 10; /* 最小高度为10行 */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- 左侧内容，占据全宽度，当屏幕大于等于 md 尺寸时显示 -->
+        <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12">
+            <!-- 播放器 -->
+            <video id="ik-video" controls class="embed-responsive-item" style="width: 100%;">
+                <source src="http://localhost:9999/files/2023/8/12/655a6aeb447b44bc93cd081a72e60c10.mkv" type="video/mp4">
+                <!-- 如果需要，可以添加其他视频格式的 source -->
+                Your browser does not support the video tag.
+            </video>
+
+            <!-- 切换选择剧集和布局 -->
+            <div class="mt-4 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 mr-3">选择剧集</h4>
+                <div class="btn-group" role="group" aria-label="Layout Toggle">
+                    <button type="button" class="btn btn-secondary toggle-layout" data-layout="horizontal">横向</button>
+                    <button type="button" class="btn btn-secondary toggle-layout" data-layout="vertical">纵向</button>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <ul id="episodeList" class="list-group">
+                    <li class="list-group-item "th:classappend="${episode.sequence == 1} ? 'active' : '' " th:each="episode: ${subject.episodes}">
+                        <span th:text="${episode.sequence}"></span>
+                        -
+                        <span th:text="${episode.name}"></span>
+                    </li>
+                    <!-- 添加更多剧集 -->
+                </ul>
+            </div>
+        </div>
+
+
+        <!-- 右侧内容，占据1/3的宽度 -->
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 ">
+            <!-- 番剧详情 -->
+            <h2 style="margin: 1vh 0" th:text="${subject.name}">番剧标题</h2>
+            <p th:text="${subject.nameCn}"></p>
+            <p class="anime-description" th:text="${subject.summary}">番剧介绍... </p>
+            <!-- 封面图 -->
+            <img th:src="${subject.cover}" width="100%" alt="番剧封面" class="cover-image">
+        </div>
+    </div>
+</div>
+
+<script src="/theme/simple/static/lib/bootstrap-5.0.2/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script th:inline="javascript">
+    var subject = [[${subject}]];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var episodeList = document.getElementById('episodeList');
+        var listItems = episodeList.getElementsByTagName('li');
+        var layoutToggleButtons = document.querySelectorAll('.toggle-layout');
+
+        for (var i = 0; i < listItems.length; i++) {
+            listItems[i].addEventListener('click', function() {
+                var epSeq = this.children[0].innerHTML;
+                console.log('episode seq', epSeq);
+                var episode = subject.episodes.find(function(ep) {
+                    return ep.sequence >= epSeq;
+                })
+                console.log('select episode', episode)
+                if(episode.resources.length > 0) {
+                    // change html style
+                    for (var j = 0; j < listItems.length; j++) {
+                        listItems[j].classList.remove('active');
+                    }
+                    this.classList.add('active');
+
+                    // switch video src
+                    var video = document.getElementById('ik-video');
+                    video.pause();
+                    video.src = episode.resources[0].url;
+                    video.load();
+                    video.play();
+                } else {
+                    alert('当前剧集没有绑定资源');
+                }
+            });
+        }
+
+        layoutToggleButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                var layout = this.getAttribute('data-layout');
+                episodeList.classList.remove('list-group-horizontal', 'flex-wrap');
+                if (layout === 'horizontal') {
+                    episodeList.classList.add('list-group-horizontal', 'flex-wrap');
+                }
+                layoutToggleButtons.forEach(function(button) {
+                    button.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+    });
+</script>
 </body>
 </html>
