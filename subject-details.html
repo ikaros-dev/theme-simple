@@ -99,6 +99,7 @@
 <script src="/theme/simple/static/lib/bootstrap-5.0.2/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 <script th:inline="javascript">
     var subject = [[${subject}]];
+    console.log('subject', subject)
 
     document.addEventListener('DOMContentLoaded', function() {
         var episodeList = document.getElementById('episodeList');
@@ -110,7 +111,10 @@
                 var epSeq = this.children[0].innerHTML;
                 console.log('episode seq', epSeq);
                 var episode = subject.episodes.find(function(ep) {
-                    return ep.sequence >= epSeq;
+                    // console.log('ep.sequence === epSeq',  ep.sequence === epSeq)
+                    // console.log('ep.sequence',  ep.sequence)
+                    // console.log('epSeq',  epSeq)
+                    return ep.group === 'MAIN' && ep.sequence + '' === epSeq;
                 })
                 console.log('select episode', episode)
                 if(episode.resources.length > 0) {
