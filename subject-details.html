@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="/theme/simple/static/favicon.ico" rel="icon">
     <title>番剧详情页面</title>
     <link href="/theme/simple/static/lib/bootstrap-5.0.2/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <style>
@@ -49,6 +50,22 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        .artplayer-app {
+            width: 100%;
+            height: 100%
+        }
+        .scale {
+            width: 100%;
+            padding-bottom: 56.25%;
+            height: 0;
+            position: relative;
+        }
+
+        .item {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+        }
     </style>
 </head>
 <body>
@@ -58,9 +75,12 @@
         <!-- 左侧内容，占据全宽度，当屏幕大于等于 md 尺寸时显示 -->
         <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12">
             <!-- 播放器 -->
-            <video id="ik-video" controls class="embed-responsive-item" style="width: 100%;">
-                Your browser does not support the video tag.
-            </video>
+            <div class="scale">
+                <div class="item">
+                    <!-- 放在固定 16:9 的父容器里 -->
+                    <div class="artplayer-app" ></div>
+                </div>
+            </div>
 
             <!-- 切换选择剧集和布局 -->
             <div class="mt-4 d-flex justify-content-between align-items-center">
@@ -73,7 +93,7 @@
 
             <div class="mt-4">
                 <ul id="episodeList" class="list-group">
-                    <li class="list-group-item "th:classappend="${episode.sequence == 1} ? 'active' : '' " th:each="episode: ${subject.episodes}">
+                    <li class="list-group-item "th:classappend="${episode.sequence == 1 && episode.group == 'MAIN'} ? 'active' : '' " th:each="episode: ${subject.episodes}">
                         <span th:text="${episode.sequence}"></span>
                         -
                         <span th:text="${episode.name}"></span>
@@ -97,27 +117,178 @@
 </div>
 
 <script src="/theme/simple/static/lib/bootstrap-5.0.2/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="/theme/simple/static/lib/artplayer-5.0.9/artplayer.js" crossorigin="anonymous"></script>
+<script src="/theme/simple/static/lib/JavascriptSubtitlesOctopus/subtitles-octopus.js" crossorigin="anonymous"></script>
+<script src="/theme/simple/static/lib/JavascriptSubtitlesOctopus/subtitles-octopus-worker.js" crossorigin="anonymous"></script>
 <script th:inline="javascript">
+    const subtitlesOctopusWorkJsPath = '/theme/simple/static/lib/JavascriptSubtitlesOctopus/subtitles-octopus-worker.js';
+
     var subject = [[${subject}]];
-    console.log('subject', subject)
+    var videoSubtitleList = [[${videoSubtitleList}]];
+    var fonts = [[${fonts}]];
+    console.debug('subject', subject);
+    console.debug('videoSubtitleList', videoSubtitleList);
+    console.debug('fonts', fonts);
+
+    const art = new Artplayer({
+        container: '.artplayer-app',
+        volume: 0.5,
+        isLive: false,
+        muted: false,
+        autoplay: false,
+        pip: true,
+        autoSize: true,
+        autoMini: true,
+        screenshot: true,
+        setting: true,
+        loop: true,
+        flip: true,
+        playbackRate: true,
+        aspectRatio: true,
+        fullscreen: true,
+        fullscreenWeb: true,
+        subtitleOffset: false,
+        miniProgressBar: true,
+        mutex: true,
+        backdrop: true,
+        playsInline: true,
+        autoPlayback: true,
+        airplay: true,
+        theme: 'skyblue',
+        lang: navigator.language.toLowerCase(),
+        moreVideoAttr: {
+            crossOrigin: 'anonymous',
+        },
+        plugins: [],
+        settings: [],
+    });
+
+    var subtitleOctopus;
+    const artplayerPluginAss = (options) => {
+        return (art) => {
+            subtitleOctopus = new SubtitlesOctopus({
+                ...options,
+                video: art.template.$video,
+            });
+
+            subtitleOctopus.canvasParent.style.zIndex = 20;
+            art.on('destroy', () => subtitleOctopus.dispose());
+
+            return {
+                key: 'artplayerPluginAss',
+                name: 'artplayerPluginAss',
+                instance: subtitleOctopus,
+            };
+        };
+    };
+
+
+    // art.on('ready', () => {
+    //     // console.debug('artplayer plugins before', art.plugins)
+    //     art.plugins.add(artplayerPluginAss({
+    //         // debug: true,
+    //         fonts: fonts,
+    //         subUrl: currentSubUrl,
+    //         workerUrl: subtitlesOctopusWorkJsPath
+    //     }));
+    //     // console.debug('artplayer plugins after', art.plugins)
+    // });
+
+
+    const artplayerSubtitleEnableSetting = {
+        key: 'artplayerSubtitleEnableSetting',
+        html: '开启',
+        tooltip: '显示',
+        switch: true,
+        onSwitch: function (item) {
+            item.tooltip = item.switch ? '隐藏' : '显示';
+            if (item.switch) {
+                subtitleOctopus.freeTrack();
+            } else {
+                subtitleOctopus.setTrackByUrl(currentSubUrl);
+            }
+            return !item.switch;
+        },
+    };
+    var currentSubUrl = ''
+    const artplayerSubtitleSetting = {
+        key: 'artplayerSubtitleSetting',
+        width: 200,
+        html: '字幕',
+        tooltip: '选择',
+        icon: '<img width="22" heigth="22" src="/theme/simple/static/images/svg/subtitle.svg">',
+        selector: [artplayerSubtitleEnableSetting],
+        onSelect: function (item) {
+            const newSubtitleUrl = item.url;
+            currentSubUrl = newSubtitleUrl;
+            subtitleOctopus.setTrackByUrl(newSubtitleUrl);
+            artplayerSubtitleEnableSetting.switch = true;
+            return item.html;
+        },
+    };
+
+    function getSubtitleSimpleNameByAttachmentName(name){
+        if (!name) return '';
+        var str = name.substring(0, name.lastIndexOf('.'));
+        str = str.substring(str.lastIndexOf('.') + 1);
+        str = str.toLocaleUpperCase();
+        // console.log('subtitle simple name', name, str);
+        return str;
+    };
+
+    function switchVideoUrl(resource) {
+        console.debug('switchVideoUrl', 'resource', resource)
+        if(!resource) return;
+        art.switch = resource.url;
+        var attachmentId = resource.attachmentId;
+        if(videoSubtitleList && videoSubtitleList.length >0) {
+            var subtitles = videoSubtitleList.filter(e => attachmentId === e.master_attachment_id);
+            console.debug('attachmentId subtitles', attachmentId, subtitles)
+            if(subtitles && subtitles.length > 0) {
+                if(subtitleOctopus) {
+                    subtitleOctopus.freeTrack();
+                }
+                subtitles.forEach(e => {
+                    var simpleName = getSubtitleSimpleNameByAttachmentName(e.name);
+                    artplayerSubtitleSetting.selector.push({
+                        default: simpleName === 'SC' || simpleName === 'sc',
+                        url: e.url,
+                        html: simpleName
+                    })
+                })
+                art.setting.add(artplayerSubtitleSetting)
+            }
+        }
+
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         var episodeList = document.getElementById('episodeList');
         var listItems = episodeList.getElementsByTagName('li');
         var layoutToggleButtons = document.querySelectorAll('.toggle-layout');
 
+        // 如果第一集有绑定资源，则切换到第一集
+        var firstEp = subject.episodes
+            .find(ep => ep.group === 'MAIN' && ep.sequence === 1 && ep.resources && ep.resources.length >0)
+        if(firstEp) {
+            switchVideoUrl(firstEp.resources[0])
+        }
+
         for (var i = 0; i < listItems.length; i++) {
             listItems[i].addEventListener('click', function() {
+                console.debug('this.children', this.children);
                 var epSeq = this.children[0].innerHTML;
-                console.log('episode seq', epSeq);
+                var epName = this.children[1].innerHTML;
+                console.debug('episode seq', epSeq);
+                console.debug('episode name', epName);
                 var episode = subject.episodes.find(function(ep) {
                     // console.log('ep.sequence === epSeq',  ep.sequence === epSeq)
                     // console.log('ep.sequence',  ep.sequence)
                     // console.log('epSeq',  epSeq)
-                    return ep.group === 'MAIN' && ep.sequence + '' === epSeq;
+                    return ep.sequence + '' === epSeq && ep.name === epName;
                 })
-                console.log('select episode', episode)
-                if(episode.resources.length > 0) {
+                console.debug('select episode', episode)
+                if(episode && episode.resources.length > 0) {
                     // change html style
                     for (var j = 0; j < listItems.length; j++) {
                         listItems[j].classList.remove('active');
@@ -125,12 +296,8 @@
                     this.classList.add('active');
 
                     // switch video src
-                    var video = document.getElementById('ik-video');
-                    video.pause();
-                    video.src = episode.resources[0].url;
-                    video.controls = true;
-                    video.load();
-                    video.play();
+                    console.debug('switch episode resource', episode.resources[0])
+                    switchVideoUrl(episode.resources[0])
                 } else {
                     alert('当前剧集没有绑定资源');
                 }
