@@ -183,16 +183,16 @@
     };
 
 
-    // art.on('ready', () => {
-    //     // console.debug('artplayer plugins before', art.plugins)
-    //     art.plugins.add(artplayerPluginAss({
-    //         // debug: true,
-    //         fonts: fonts,
-    //         subUrl: currentSubUrl,
-    //         workerUrl: subtitlesOctopusWorkJsPath
-    //     }));
-    //     // console.debug('artplayer plugins after', art.plugins)
-    // });
+    art.on('ready', () => {
+        // console.debug('artplayer plugins before', art.plugins)
+        art.plugins.add(artplayerPluginAss({
+            // debug: true,
+            fonts: fonts,
+            subUrl: currentSubUrl,
+            workerUrl: subtitlesOctopusWorkJsPath
+        }));
+        // console.debug('artplayer plugins after', art.plugins)
+    });
 
 
     const artplayerSubtitleEnableSetting = {
@@ -248,6 +248,7 @@
                 if(subtitleOctopus) {
                     subtitleOctopus.freeTrack();
                 }
+                artplayerSubtitleSetting.selector = []
                 subtitles.forEach(e => {
                     var simpleName = getSubtitleSimpleNameByAttachmentName(e.name);
                     artplayerSubtitleSetting.selector.push({
@@ -256,7 +257,7 @@
                         html: simpleName
                     })
                 })
-                art.setting.add(artplayerSubtitleSetting)
+                art.setting.update(artplayerSubtitleSetting)
             }
         }
 
