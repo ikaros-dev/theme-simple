@@ -274,11 +274,11 @@
         var layoutToggleButtons = document.querySelectorAll('.toggle-layout');
 
         // 如果第一集有绑定资源，则切换到第一集
-        // var firstEp = subject.episodes
-        //     .find(ep => ep.group === 'MAIN' && ep.sequence === 1 && ep.resources && ep.resources.length >0)
-        // if(firstEp) {
-        //     switchVideoUrl(firstEp.resources[0])
-        // }
+        var firstEp = subject.episodes
+            .find(ep => ep.group === 'MAIN' && ep.sequence === 1 && ep.resources && ep.resources.length > 0)
+        if (firstEp) {
+            switchVideoUrl(firstEp.resources[0])
+        }
 
         for (var i = 0; i < listItems.length; i++) {
             listItems[i].addEventListener('click', function() {
