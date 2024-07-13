@@ -249,6 +249,9 @@
                 if(subtitleOctopus) {
                     subtitleOctopus.freeTrack();
                 }
+                console.debug('art.setting', art.setting)
+                artplayerSubtitleSetting.selector = []
+                artplayerSubtitleSetting.selector.push(artplayerSubtitleEnableSetting)
                 subtitles.forEach(e => {
                     var simpleName = getSubtitleSimpleNameByAttachmentName(e.name);
                     artplayerSubtitleSetting.selector.push({
@@ -257,8 +260,10 @@
                         html: simpleName
                     })
                 })
-                art.setting.add(artplayerSubtitleSetting)
+                art.setting.update(artplayerSubtitleSetting)
             }
+        } else {
+            art.setting.remove('artplayerSubtitleSetting');
         }
 
     }
@@ -269,11 +274,11 @@
         var layoutToggleButtons = document.querySelectorAll('.toggle-layout');
 
         // 如果第一集有绑定资源，则切换到第一集
-        var firstEp = subject.episodes
-            .find(ep => ep.group === 'MAIN' && ep.sequence === 1 && ep.resources && ep.resources.length >0)
-        if(firstEp) {
-            switchVideoUrl(firstEp.resources[0])
-        }
+        // var firstEp = subject.episodes
+        //     .find(ep => ep.group === 'MAIN' && ep.sequence === 1 && ep.resources && ep.resources.length >0)
+        // if(firstEp) {
+        //     switchVideoUrl(firstEp.resources[0])
+        // }
 
         for (var i = 0; i < listItems.length; i++) {
             listItems[i].addEventListener('click', function() {
