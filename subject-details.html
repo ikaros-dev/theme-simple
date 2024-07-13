@@ -132,6 +132,26 @@
     console.debug('videoSubtitleList', videoSubtitleList);
     console.debug('fonts', fonts);
 
+
+    var subtitleOctopus;
+    const artplayerPluginAss = (options) => {
+        return (art) => {
+            subtitleOctopus = new SubtitlesOctopus({
+                ...options,
+                video: art.template.$video,
+            });
+
+            subtitleOctopus.canvasParent.style.zIndex = 20;
+            art.on('destroy', () => subtitleOctopus.dispose());
+
+            return {
+                key: 'artplayerPluginAss',
+                name: 'artplayerPluginAss',
+                instance: subtitleOctopus,
+            };
+        };
+    };
+
     const art = new Artplayer({
         container: '.artplayer-app',
         volume: 0.5,
@@ -165,28 +185,9 @@
         settings: [],
     });
 
-    var subtitleOctopus;
-    const artplayerPluginAss = (options) => {
-        return (art) => {
-            subtitleOctopus = new SubtitlesOctopus({
-                ...options,
-                video: art.template.$video,
-            });
-
-            subtitleOctopus.canvasParent.style.zIndex = 20;
-            art.on('destroy', () => subtitleOctopus.dispose());
-
-            return {
-                key: 'artplayerPluginAss',
-                name: 'artplayerPluginAss',
-                instance: subtitleOctopus,
-            };
-        };
-    };
-
-
-    art.on('ready', () => {
-        // console.debug('artplayer plugins before', art.plugins)
+    var currentSubUrl = '';
+    if (videoSubtitleList.length > 0) {
+        currentSubUrl = videoSubtitleList[0].url;
         art.plugins.add(artplayerPluginAss({
             // debug: true,
             fonts: fonts,
@@ -194,9 +195,7 @@
             subUrl: currentSubUrl,
             workerUrl: subtitlesOctopusWorkJsPath
         }));
-        // console.debug('artplayer plugins after', art.plugins)
-    });
-
+    }
 
     const artplayerSubtitleEnableSetting = {
         key: 'artplayerSubtitleEnableSetting',
@@ -213,7 +212,6 @@
             return !item.switch;
         },
     };
-    var currentSubUrl = ''
     const artplayerSubtitleSetting = {
         key: 'artplayerSubtitleSetting',
         width: 200,
