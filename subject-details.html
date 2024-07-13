@@ -121,11 +121,13 @@
 <script src="/theme/simple/static/lib/JavascriptSubtitlesOctopus/subtitles-octopus.js" crossorigin="anonymous"></script>
 <script src="/theme/simple/static/lib/JavascriptSubtitlesOctopus/subtitles-octopus-worker.js" crossorigin="anonymous"></script>
 <script th:inline="javascript">
-    const subtitlesOctopusWorkJsPath = '/theme/simple/static/lib/JavascriptSubtitlesOctopus/subtitles-octopus-worker.js';
+    const subtitlesOctopusWorkJsPath = window.location.origin + '/theme/simple/static/lib/JavascriptSubtitlesOctopus/subtitles-octopus-worker.js';
 
     var subject = [[${subject}]];
     var videoSubtitleList = [[${videoSubtitleList}]];
     var fonts = [[${fonts}]];
+    console.debug('window.location.origin', window.location.origin)
+    fonts = fonts.map(url => window.location.origin + url)
     console.debug('subject', subject);
     console.debug('videoSubtitleList', videoSubtitleList);
     console.debug('fonts', fonts);
@@ -183,16 +185,17 @@
     };
 
 
-    // art.on('ready', () => {
-    //     // console.debug('artplayer plugins before', art.plugins)
-    //     art.plugins.add(artplayerPluginAss({
-    //         // debug: true,
-    //         fonts: fonts,
-    //         subUrl: currentSubUrl,
-    //         workerUrl: subtitlesOctopusWorkJsPath
-    //     }));
-    //     // console.debug('artplayer plugins after', art.plugins)
-    // });
+    art.on('ready', () => {
+        // console.debug('artplayer plugins before', art.plugins)
+        art.plugins.add(artplayerPluginAss({
+            // debug: true,
+            fonts: fonts,
+            fallbackFont: '',
+            subUrl: currentSubUrl,
+            workerUrl: subtitlesOctopusWorkJsPath
+        }));
+        // console.debug('artplayer plugins after', art.plugins)
+    });
 
 
     const artplayerSubtitleEnableSetting = {
