@@ -94,6 +94,8 @@
             <div class="mt-4">
                 <ul id="episodeList" class="list-group">
                     <li class="list-group-item "th:classappend="${episode.sequence == 1 && episode.group == 'MAIN'} ? 'active' : '' " th:each="episode: ${subject.episodes}">
+                        <span th:text="${episode.group}"></span>
+                        -
                         <span th:text="${episode.sequence}"></span>
                         -
                         <span th:text="${episode.name}"></span>
@@ -274,37 +276,54 @@
         // 如果第一集有绑定资源，则切换到第一集
         var urlParams = new URLSearchParams(window.location.search);
         var epSeq = urlParams.get('episode');
+        var epGroup = urlParams.get('group');
+        if (!epGroup || epGroup === '') epGroup = 'MAIN';
         var selectedEpisode = subject.episodes
-            .find(ep => ep.group === 'MAIN' && (ep.sequence + '') === epSeq && ep.resources && ep.resources.length > 0)
+            .find(ep => ep.group === epGroup && (ep.sequence + '') === epSeq && ep.resources && ep.resources.length > 0)
         console.info('selected episode', epSeq, selectedEpisode);
         if (selectedEpisode) {
             switchVideoUrl(selectedEpisode.resources[0])
+            console.debug('listItems', listItems)
+            var seleItem = undefined;
+            for (var i = 0; i < listItems.length; i++) {
+                var group = listItems[i].children[0].innerHTML;
+                var seq = listItems[i].children[1].innerHTML;
+                if ((epSeq + '') === seq && (epGroup + '') === group) {
+                    seleItem = listItems[i];
+                    break;
+                }
+            }
+            console.debug('seleItem', seleItem)
+            if (seleItem) seleItem.classList.add('active');
         }
 
         for (var i = 0; i < listItems.length; i++) {
             listItems[i].addEventListener('click', function() {
                 console.debug('this.children', this.children);
-                var epSeq = this.children[0].innerHTML;
-                var epName = this.children[1].innerHTML;
+                var epGroup = this.children[0].innerHTML;
+                var epSeq = this.children[1].innerHTML;
+                var epName = this.children[2].innerHTML;
                 console.debug('episode seq', epSeq);
                 console.debug('episode name', epName);
                 var episode = subject.episodes.find(function(ep) {
                     // console.log('ep.sequence === epSeq',  ep.sequence === epSeq)
                     // console.log('ep.sequence',  ep.sequence)
                     // console.log('epSeq',  epSeq)
-                    return ep.sequence + '' === epSeq && ep.name === epName;
+                    return ((ep.group + '') === epGroup) && ((ep.sequence + '') === epSeq) && (ep.name === epName);
                 })
                 console.debug('select episode', episode)
                 if(episode && episode.resources.length > 0) {
                     // change html style
-                    for (var j = 0; j < listItems.length; j++) {
-                        listItems[j].classList.remove('active');
-                    }
-                    this.classList.add('active');
-
-                    // switch video src
-                    console.debug('switch episode resource', episode.resources[0])
-                    switchVideoUrl(episode.resources[0])
+                    // for (var j = 0; j < listItems.length; j++) {
+                    //     listItems[j].classList.remove('active');
+                    // }
+                    // this.classList.add('active');
+                    //
+                    // // switch video src
+                    // console.debug('switch episode resource', episode.resources[0])
+                    // switchVideoUrl(episode.resources[0])
+                    window.location.href = window.location.origin.substring(0, window.location.origin.indexOf('?'))
+                        + '?episode=' + epSeq + '&group=' + epGroup;
                 } else {
                     alert('当前剧集没有绑定资源');
                 }
