@@ -268,18 +268,24 @@
 
     }
 
+    function getEpisodeSeqStr(num) {
+        let epSeqStr = num + '';
+        epSeqStr = epSeqStr.indexOf('.') > 0 ? epSeqStr : epSeqStr + ".0"
+        return epSeqStr
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         var episodeList = document.getElementById('episodeList');
         var listItems = episodeList.getElementsByTagName('li');
         var layoutToggleButtons = document.querySelectorAll('.toggle-layout');
 
         // 如果第一集有绑定资源，则切换到第一集
-        var urlParams = new URLSearchParams(window.location.search);
-        var epSeq = urlParams.get('episode');
-        var epGroup = urlParams.get('group');
+        const urlParams = new URLSearchParams(window.location.search);
+        const epSeq = urlParams.get('episode');
+        let epGroup = urlParams.get('group');
         if (!epGroup || epGroup === '') epGroup = 'MAIN';
-        var selectedEpisode = subject.episodes
-            .find(ep => ep.group === epGroup && (ep.sequence + '') === epSeq && ep.resources && ep.resources.length > 0)
+        const selectedEpisode = subject.episodes
+            .find(ep => ep.group === epGroup && getEpisodeSeqStr(ep.sequence) === epSeq && ep.resources && ep.resources.length > 0);
         console.info('selected episode', epSeq, selectedEpisode);
         if (selectedEpisode) {
             switchVideoUrl(selectedEpisode.resources[0])
@@ -306,10 +312,9 @@
                 console.debug('episode seq', epSeq);
                 console.debug('episode name', epName);
                 var episode = subject.episodes.find(function(ep) {
-                    // console.log('ep.sequence === epSeq',  ep.sequence === epSeq)
-                    // console.log('ep.sequence',  ep.sequence)
-                    // console.log('epSeq',  epSeq)
-                    return ((ep.group + '') === epGroup) && ((ep.sequence + '') === epSeq) && (ep.name === epName);
+                    console.debug('epSeq',  epSeq)
+                    console.debug('ep.sequence',  ep.sequence)
+                    return ((ep.group + '') === epGroup) && (getEpisodeSeqStr(ep.sequence) === epSeq) && (ep.name === epName);
                 })
                 console.debug('select episode', episode)
                 if(episode && episode.resources.length > 0) {
@@ -323,7 +328,7 @@
                     // console.debug('switch episode resource', episode.resources[0])
                     // switchVideoUrl(episode.resources[0])
                     window.location.href = window.location.origin.substring(0, window.location.origin.indexOf('?'))
-                        + '?episode=' + epSeq + '&group=' + epGroup;
+                        + '?group=' + epGroup + '&episode=' + epSeq;
                 } else {
                     alert('当前剧集没有绑定资源');
                 }
