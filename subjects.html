@@ -52,7 +52,7 @@
                 <div class="card-body">
                     <h5 class="card-title" th:text="${subject.name}">Subject name</h5>
                     <p class="card-text ik-anime-overview" th:text="${subject.summary}">Subject summary</p>
-                    <a th:href="@{/subject/{id}(id=${subject.id}, group='MAIN', episode=1)}" class="btn btn-primary">前往条目详情</a>
+                    <a th:href="@{/subject/{id}(id=${subject.id}, group='MAIN', episode=1.0)}" class="btn btn-primary">前往条目详情</a>
                 </div>
             </div>
         </div>
