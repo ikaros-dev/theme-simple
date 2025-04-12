@@ -93,12 +93,12 @@
 
             <div class="mt-4">
                 <ul id="episodeList" class="list-group">
-                    <li class="list-group-item "th:classappend="${episode.sequence == 1 && episode.group == 'MAIN'} ? 'active' : '' " th:each="episode: ${subject.episodes}">
-                        <span th:text="${episode.group}"></span>
+                    <li class="list-group-item "th:classappend="${episode.episode.sequence == 1 && episode.episode.group == 'MAIN'} ? 'active' : '' " th:each="episode: ${episodeRecords}">
+                        <span th:text="${episode.episode.group}"></span>
                         -
-                        <span th:text="${episode.sequence}"></span>
+                        <span th:text="${episode.episode.sequence}"></span>
                         -
-                        <span th:text="${episode.name}"></span>
+                        <span th:text="${episode.episode.name}"></span>
                     </li>
                     <!-- 添加更多剧集 -->
                 </ul>
@@ -126,11 +126,13 @@
     const subtitlesOctopusWorkJsPath = window.location.origin + '/theme/simple/static/lib/JavascriptSubtitlesOctopus/subtitles-octopus-worker.js';
 
     var subject = [[${subject}]];
+    var episodeRecords = [[${episodeRecords}]];
     var videoSubtitleList = [[${videoSubtitleList}]];
     var fonts = [[${fonts}]];
     console.debug('window.location.origin', window.location.origin)
     fonts = fonts.map(url => window.location.origin + url)
     console.debug('subject', subject);
+    console.debug('episodeRecords', episodeRecords);
     console.debug('videoSubtitleList', videoSubtitleList);
     console.debug('fonts', fonts);
 
@@ -188,7 +190,7 @@
     });
 
     var currentSubUrl = '';
-    if (videoSubtitleList.length > 0) {
+    if (videoSubtitleList && videoSubtitleList.length > 0) {
         currentSubUrl = videoSubtitleList[0].url;
         art.plugins.add(artplayerPluginAss({
             // debug: true,
@@ -288,8 +290,8 @@
         const epSeq = urlParams.get('episode');
         let epGroup = urlParams.get('group');
         if (!epGroup || epGroup === '') epGroup = 'MAIN';
-        const selectedEpisode = subject.episodes
-            .find(ep => ep.group === epGroup && getEpisodeSeqStr(ep.sequence) === epSeq && ep.resources && ep.resources.length > 0);
+        const selectedEpisode = episodeRecords
+            .find(ep => ep.episode.group === epGroup && getEpisodeSeqStr(ep.episode.sequence) === epSeq && ep.resources && ep.resources.length > 0);
         console.info('selected episode', epSeq, selectedEpisode);
         if (selectedEpisode) {
             switchVideoUrl(selectedEpisode.resources[0])
@@ -315,10 +317,10 @@
                 var epName = this.children[2].innerHTML;
                 console.debug('episode seq', epSeq);
                 console.debug('episode name', epName);
-                var episode = subject.episodes.find(function(ep) {
+                var episode = episodeRecords.find(function(ep) {
                     console.debug('epSeq',  epSeq)
-                    console.debug('ep.sequence',  ep.sequence)
-                    return ((ep.group + '') === epGroup) && (getEpisodeSeqStr(ep.sequence) === epSeq) && (ep.name === epName);
+                    console.debug('ep.episode.sequence',  ep.episode.sequence)
+                    return ((ep.episode.group + '') === epGroup) && (getEpisodeSeqStr(ep.episode.sequence) === epSeq) && (ep.episode.name === epName);
                 })
                 console.debug('select episode', episode)
                 if(episode && episode.resources.length > 0) {
